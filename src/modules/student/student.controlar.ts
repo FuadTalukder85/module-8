@@ -1,17 +1,42 @@
 import { Request, Response } from 'express';
 import { studentServices } from './student.service';
+import studentValidationSchema from './student.validation';
+// import studentValidationSchema from './student.validation';
 
 const createStudent = async (req: Request, res: Response) => {
   try {
+    //creating a schema validation using zod
+
     const { student: studentData } = req.body;
-    const result = await studentServices.createStudentInDB(studentData);
+
+    //data validation using joi
+    // const { error, value } = studentValidationSchema.validate(studentData);
+
+    //data validation usidng zod
+
+    const zodParseData = studentValidationSchema.parse(studentData);
+
+    const result = await studentServices.createStudentInDB(zodParseData);
+
+    // if (error) {
+    //   res.status(500).json({
+    //     success: false,
+    //     message: 'Something is wronggg',
+    //     error: error.details,
+    //   });
+    // }
+
     res.status(200).json({
       success: true,
-      message: 'student is creat successfully',
+      message: 'student is created successfully',
       data: result,
     });
-  } catch (err) {
-    console.log(err);
+  } catch (err: any) {
+    res.status(500).json({
+      success: false,
+      message: err.message || 'Something is wronggg',
+      error: err,
+    });
   }
 };
 
